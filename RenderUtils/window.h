@@ -4,7 +4,7 @@ class Window {
 private:
 	int width, height;
 	char title[64];
-	class GLFWwindow* winHandle = nullptr;
+	struct GLFWwindow* winHandle = nullptr;
 	bool isInitialized = false;
 
 public:

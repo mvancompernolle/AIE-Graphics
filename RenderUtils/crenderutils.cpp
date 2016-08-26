@@ -25,8 +25,8 @@ Geometry makeGeometry(const Vertex* verts, size_t vsize, const unsigned int* tri
 	// attributes
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*) 16);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)Vertex::POSITION);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)Vertex::COLOR);
 
 	// unscope the variables
 	glBindVertexArray(0);
@@ -63,7 +63,7 @@ Shader makeShader(const char * vsource, const char * fsource)
 	glDeleteShader(vs);
 	glDeleteShader(fs);
 
-	return Shader();
+	return shader;
 }
 
 void freeShader(Shader& shader)
