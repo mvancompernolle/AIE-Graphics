@@ -2,6 +2,8 @@
 
 class Window {
 private:
+	friend class Input;
+
 	int width, height;
 	char title[64];
 	struct GLFWwindow* winHandle = nullptr;

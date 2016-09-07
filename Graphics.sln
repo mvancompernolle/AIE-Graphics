@@ -10,6 +10,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TriangleTest", "TriangleTes
 		{AD1E0D7E-E846-4E51-B1C6-294030C99A93} = {AD1E0D7E-E846-4E51-B1C6-294030C99A93}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CameraTest", "CameraTest\CameraTest.vcxproj", "{6D362FD9-D581-4867-A797-4B70547A469B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AD1E0D7E-E846-4E51-B1C6-294030C99A93} = {AD1E0D7E-E846-4E51-B1C6-294030C99A93}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,6 +39,14 @@ Global
 		{0EA460C9-403C-4368-A023-DF1E3264BFC8}.Release|x64.Build.0 = Release|x64
 		{0EA460C9-403C-4368-A023-DF1E3264BFC8}.Release|x86.ActiveCfg = Release|Win32
 		{0EA460C9-403C-4368-A023-DF1E3264BFC8}.Release|x86.Build.0 = Release|Win32
+		{6D362FD9-D581-4867-A797-4B70547A469B}.Debug|x64.ActiveCfg = Debug|x64
+		{6D362FD9-D581-4867-A797-4B70547A469B}.Debug|x64.Build.0 = Debug|x64
+		{6D362FD9-D581-4867-A797-4B70547A469B}.Debug|x86.ActiveCfg = Debug|Win32
+		{6D362FD9-D581-4867-A797-4B70547A469B}.Debug|x86.Build.0 = Debug|Win32
+		{6D362FD9-D581-4867-A797-4B70547A469B}.Release|x64.ActiveCfg = Release|x64
+		{6D362FD9-D581-4867-A797-4B70547A469B}.Release|x64.Build.0 = Release|x64
+		{6D362FD9-D581-4867-A797-4B70547A469B}.Release|x86.ActiveCfg = Release|Win32
+		{6D362FD9-D581-4867-A797-4B70547A469B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
