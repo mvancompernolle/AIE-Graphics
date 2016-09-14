@@ -8,3 +8,8 @@ struct Geometry
 struct Shader {
 	unsigned handle;
 };
+
+struct Texture {
+	unsigned handle;
+	unsigned width, height, format;
+};

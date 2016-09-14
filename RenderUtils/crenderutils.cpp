@@ -3,6 +3,11 @@
 #include "crenderutils.h"
 #include <cstdio>
 
+#include "GLM\gtc\noise.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "STB\stb_image.h"
+
 Geometry makeGeometry(const Vertex       * verts, size_t vsize,
 					  const unsigned int * tris , size_t tsize)
 {
@@ -13,26 +18,30 @@ Geometry makeGeometry(const Vertex       * verts, size_t vsize,
 	glGenBuffers(1, &retval.ibo);	   // Store indices
 	glGenVertexArrays(1, &retval.vao); // Store attribute information
 
-	// Scope the variables
+									   // Scope the variables
 	glBindVertexArray(retval.vao);
-	glBindBuffer(GL_ARRAY_BUFFER        , retval.vbo); // scope our vertices
+	glBindBuffer(GL_ARRAY_BUFFER, retval.vbo); // scope our vertices
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, retval.ibo); // triangle is scoped
 
-	// Initialize the variables
-	glBufferData(GL_ARRAY_BUFFER        , vsize * sizeof(Vertex)  , verts, GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, tsize * sizeof(unsigned), tris , GL_STATIC_DRAW);
+													   // Initialize the variables
+	glBufferData(GL_ARRAY_BUFFER, vsize * sizeof(Vertex), verts, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, tsize * sizeof(unsigned), tris, GL_STATIC_DRAW);
 
 	// Attributes let us tell openGL how the memory is laid out
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(0); // Position
+	glEnableVertexAttribArray(1); // Color
+	glEnableVertexAttribArray(2); // Normal
+	glEnableVertexAttribArray(3); // TexCoord
 
-	// index of the attribute, number of elements, type, normalized?, size of vertex, offset
+								  // index of the attribute, number of elements, type, normalized?, size of vertex, offset
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)Vertex::POSITION);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)Vertex::COLOR);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)Vertex::NORMAL);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)Vertex::TEXCOORD);
 
 	// unscope the variables
 	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER		, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	retval.size = tsize;
 	return retval;
@@ -76,6 +85,72 @@ void freeShader(Shader &shader)
 	shader.handle = 0;
 }
 
+Texture makeTexture(unsigned width, unsigned height, unsigned format, const unsigned char *pixels)
+{
+	Texture retval = { 0, width, height, format };
+
+	glGenTextures(1, &retval.handle);				// Declaration
+	glBindTexture(GL_TEXTURE_2D, retval.handle);    // Scoping
+
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pixels);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return retval;
+}
+
+Texture makeTextureF(unsigned square, const float * pixels)
+{
+	Texture retval = { 0, square, square, GL_RED }; // GL_RED, GL_RG, GL_RGB, GL_RGBA
+
+	glGenTextures(1, &retval.handle);				// Declaration
+	glBindTexture(GL_TEXTURE_2D, retval.handle);    // Scoping
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, square, square, 0, GL_RED, GL_FLOAT, pixels);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return retval;
+}
+
+Texture loadTexture(const char *path)
+{
+	int w, h, f;
+	unsigned char *p;
+
+	Texture retval = { 0,0,0,0 };
+
+	stbi_set_flip_vertically_on_load(true); // DirectX or OpenGL
+	p = stbi_load(path, &w, &h, &f, STBI_default);
+
+	if (!p) return retval;
+
+	switch (f)
+	{
+	case STBI_grey: f = GL_RED;  break;
+	case STBI_grey_alpha: f = GL_RG;   break;
+	case STBI_rgb: f = GL_RGB;  break;
+	case STBI_rgb_alpha: f = GL_RGBA; break;
+	}
+
+	retval = makeTexture(w, h, f, p);
+	stbi_image_free(p);
+	return retval;
+}
+
+void freeTexture(Texture &t)
+{
+	glDeleteTextures(1, &t.handle);
+	t = { 0,0,0,0 };
+}
 
 
 // not quite working!
@@ -144,29 +219,31 @@ Geometry loadOBJ(const char *path)
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string err;
-
 	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, path);
+	int vsize = shapes[0].mesh.indices.size();
+	Vertex   *verts = new Vertex[vsize];
+	unsigned * tris = new unsigned[vsize];
 
-	Vertex   *verts = new Vertex[attrib.vertices.size()/3];
-	unsigned * tris = new unsigned[shapes[0].mesh.indices.size()];
-
-	for (int i = 0; i < attrib.vertices.size()/3; ++i)
+	for (int i = 0; i < vsize; ++i)
 	{
-		verts[i] = { attrib.vertices[i*3],
-					 attrib.vertices[i*3+1],
-					 attrib.vertices[i*3+2], 1};
+		auto ind = shapes[0].mesh.indices[i];
 
-		verts[i].color[0] = rand() * 1.0f / RAND_MAX;
-		verts[i].color[1] = rand() * 1.0f / RAND_MAX;
-		verts[i].color[2] = rand() * 1.0f / RAND_MAX;
-		verts[i].color[3] = 1;
+		const float *n = &attrib.normals[ind.normal_index * 3]; // +1, +2, 0
+		const float *p = &attrib.vertices[ind.vertex_index * 3]; // +1, +2, 1
+
+		verts[i].position = glm::vec4(p[0], p[1], p[2], 1.f);
+		verts[i].normal = glm::vec4(n[0], n[1], n[2], 0.f);
+
+		if (ind.texcoord_index >= 0)
+		{
+			const float *t = &attrib.texcoords[ind.texcoord_index * 2]; // +1
+			verts[i].texcoord = glm::vec2(t[0], t[1]);
+		}
+
+		tris[i] = i;
 	}
 
-	for (int i = 0; i < shapes[0].mesh.indices.size(); ++i)
-		tris[i] = shapes[0].mesh.indices[i].vertex_index;
-
-	Geometry retval = makeGeometry(verts, attrib.vertices.size() / 3,
-								    tris, shapes[0].mesh.indices.size());
+	Geometry retval = makeGeometry(verts, vsize, tris, vsize);
 
 	delete[] verts;
 	delete[] tris;
@@ -217,5 +294,69 @@ void draw(const Shader &s, const Geometry &g,
 
 	glUniform1f(3, time);
 
+	glDrawElements(GL_TRIANGLES, g.size, GL_UNSIGNED_INT, 0);
+}
+
+void draw(const Shader &s, const Geometry &g, const Texture &t,
+	const float M[16], const float V[16], const float P[16], float time)
+{
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glUseProgram(s.handle);
+	glBindVertexArray(g.vao);
+
+
+	glUniformMatrix4fv(0, 1, GL_FALSE, P);
+	glUniformMatrix4fv(1, 1, GL_FALSE, V);
+	glUniformMatrix4fv(2, 1, GL_FALSE, M);
+
+	glUniform1f(3, time);
+
+	// Minimum guaranteed is 8.
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, t.handle);
+	glUniform1i(4, 0);
+
+	glDrawElements(GL_TRIANGLES, g.size, GL_UNSIGNED_INT, 0);
+}
+
+void drawPhong(const Shader &s, const Geometry &g,
+	const float M[16], const float V[16], const float P[16])
+{
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glUseProgram(s.handle);
+	glBindVertexArray(g.vao);
+
+	glUniformMatrix4fv(0, 1, GL_FALSE, P);
+	glUniformMatrix4fv(1, 1, GL_FALSE, V);
+	glUniformMatrix4fv(2, 1, GL_FALSE, M);
+
+
+	glDrawElements(GL_TRIANGLES, g.size, GL_UNSIGNED_INT, 0);
+}
+
+void drawPhong(const Shader &s, const Geometry &g,
+	const float M[16], const float V[16], const float P[16],
+	const Texture *T, unsigned t_count)
+{
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glUseProgram(s.handle);
+	glBindVertexArray(g.vao);
+
+	glUniformMatrix4fv(0, 1, GL_FALSE, P);
+	glUniformMatrix4fv(1, 1, GL_FALSE, V);
+	glUniformMatrix4fv(2, 1, GL_FALSE, M);
+
+	for (int i = 0; i < t_count; ++i)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, T[i].handle);
+		glUniform1i(3 + i, 0 + i);
+	}
 	glDrawElements(GL_TRIANGLES, g.size, GL_UNSIGNED_INT, 0);
 }

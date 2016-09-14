@@ -8,7 +8,20 @@ Shader makeShader(const char* vsource, const char* fsource);
 Shader loadShader(const char* vpath, const char* fpath);
 void freeShader(Shader& shader);
 
+Texture makeTexture(unsigned width, unsigned height, unsigned format, const unsigned char *pixels);
+Texture makeTextureF(unsigned square, const float *pixels);
+Texture loadTexture(const char *path);
+void freeTexture(Texture& texture);
+
+
 Geometry loadOBJ(const char* path);
 void draw(const Shader& shader, const Geometry& geo);
 void draw(const Shader& shader, const Geometry& geo, float time);
 void draw(const Shader& shader, const Geometry& geo, const float M[16], const float V[16], const float P[16], float time);
+void draw(const Shader& shader, const Geometry& geo, const Texture& tex, const float M[16], const float V[16], const float P[16], float time);
+void drawPhong(const Shader &s, const Geometry &g,
+	const float M[16], const float V[16], const float P[16]);
+
+void drawPhong(const Shader &s, const Geometry &g,
+	const float M[16], const float V[16], const float P[16],
+	const Texture *T, unsigned t_count);
