@@ -15,6 +15,7 @@ void freeTexture(Texture& texture);
 
 Framebuffer makeFramebuffer(unsigned width, unsigned height, unsigned numColors);
 void freeFramebuffer(Framebuffer& fbo);
+void clearFramebuffer(const Framebuffer& fbo);
 
 Geometry loadOBJ(const char* path);
 void draw(const Shader& shader, const Geometry& geo);
@@ -25,5 +26,9 @@ void drawPhong(const Shader &s, const Geometry &g,
 	const float M[16], const float V[16], const float P[16]);
 
 void drawPhong(const Shader &s, const Geometry &g,
+	const float M[16], const float V[16], const float P[16],
+	const Texture *T, unsigned t_count);
+
+void drawFB(const Shader &s, const Geometry &g, const Framebuffer& fbo,
 	const float M[16], const float V[16], const float P[16],
 	const Texture *T, unsigned t_count);

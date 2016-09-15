@@ -154,7 +154,7 @@ void freeTexture(Texture &t)
 
 Framebuffer makeFramebuffer(unsigned width, unsigned height, unsigned numColors)
 {
-	Framebuffer retval = {0, width, height, 0, 0, 0, 0, 0, 0, 0, 0};
+	Framebuffer retval = {0, width, height, numColors};
 
 	glGenFramebuffers(1, &retval.handle);
 	glBindFramebuffer(GL_FRAMEBUFFER, retval.handle);
@@ -178,6 +178,17 @@ Framebuffer makeFramebuffer(unsigned width, unsigned height, unsigned numColors)
 
 void freeFramebuffer(Framebuffer & fbo)
 {
+	for (int i = 0; i < 8 && i < fbo.nColors; ++i) {
+		freeTexture(fbo.colors[i]);
+	}
+	glDeleteFramebuffers(1, &fbo.handle);
+	fbo = { 0, 0, 0, 0 };
+}
+
+void clearFramebuffer(const Framebuffer & fbo)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo.handle);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 
@@ -375,6 +386,30 @@ void drawPhong(const Shader &s, const Geometry &g,
 
 	glUseProgram(s.handle);
 	glBindVertexArray(g.vao);
+
+	glUniformMatrix4fv(0, 1, GL_FALSE, P);
+	glUniformMatrix4fv(1, 1, GL_FALSE, V);
+	glUniformMatrix4fv(2, 1, GL_FALSE, M);
+
+	for (int i = 0; i < t_count; ++i)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, T[i].handle);
+		glUniform1i(3 + i, 0 + i);
+	}
+	glDrawElements(GL_TRIANGLES, g.size, GL_UNSIGNED_INT, 0);
+}
+
+void drawFB(const Shader & s, const Geometry & g, const Framebuffer & fbo, const float M[16], const float V[16], const float P[16], const Texture * T, unsigned t_count)
+{
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo.handle);
+	glUseProgram(s.handle);
+	glBindVertexArray(g.vao);
+
+	glViewport(0, 0, fbo.width, fbo.height);
 
 	glUniformMatrix4fv(0, 1, GL_FALSE, P);
 	glUniformMatrix4fv(1, 1, GL_FALSE, V);
