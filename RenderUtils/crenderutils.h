@@ -13,6 +13,8 @@ Texture makeTextureF(unsigned square, const float *pixels);
 Texture loadTexture(const char *path);
 void freeTexture(Texture& texture);
 
+Framebuffer makeFramebuffer(unsigned width, unsigned height, unsigned numColors);
+void freeFramebuffer(Framebuffer& fbo);
 
 Geometry loadOBJ(const char* path);
 void draw(const Shader& shader, const Geometry& geo);

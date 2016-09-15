@@ -152,6 +152,34 @@ void freeTexture(Texture &t)
 	t = { 0,0,0,0 };
 }
 
+Framebuffer makeFramebuffer(unsigned width, unsigned height, unsigned numColors)
+{
+	Framebuffer retval = {0, width, height, 0, 0, 0, 0, 0, 0, 0, 0};
+
+	glGenFramebuffers(1, &retval.handle);
+	glBindFramebuffer(GL_FRAMEBUFFER, retval.handle);
+
+	const GLenum attachments[8] =
+	{
+		GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+		GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7
+	};
+
+	// make and attach textures
+	for (int i = 0; i < numColors && i < 8; ++i) {
+		retval.colors[i] = makeTexture(width, height, GL_RGBA, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, attachments[i], retval.colors[i].handle, 0);
+	}
+
+	glDrawBuffers(numColors, attachments);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return retval;
+}
+
+void freeFramebuffer(Framebuffer & fbo)
+{
+}
+
 
 // not quite working!
 long copyFileToArray(char *dest, size_t dlen, const char *path)
