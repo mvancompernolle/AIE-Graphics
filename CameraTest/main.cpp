@@ -3,8 +3,8 @@
 #include "crenderutils.h"
 #include "window.h"
 #include "Input.h"
-#include "procgen.h"
 #include "Vertex.h"
+
 #include "GLM\glm.hpp"
 #include "GLM\ext.hpp"
 
@@ -26,8 +26,7 @@ int main()
 	Shader   shader = loadShader("../res/shaders/phongVert.glsl",
 		"../res/shaders/phongFrag.glsl");
 
-	Shader post = loadShader("../res/shaders/postVert.glsl",
-		"../res/shaders/postFrag.glsl");
+
 
 	Texture tarray[] = { loadTexture("../res/textures/soulspear_diffuse.tga"),
 		loadTexture("../res/textures/soulspear_specular.tga"),
@@ -45,23 +44,26 @@ int main()
 
 	Geometry quad = makeGeometry(verts, 4, tris, 6);
 
+	Shader   post = loadShader("../res/shaders/postVert.glsl",
+		"../res/shaders/postFrag.glsl");
+
 	float time = 0;
 	while (window.step())
 	{
 		clearFramebuffer(frame);
 		input.step();
-
 		time += 0.016f;
-
-
 		modelC = glm::rotate(time, glm::normalize(glm::vec3(0, 1, 0)));
 
-		drawFB(shader, soulspear, frame, glm::value_ptr(modelC),
+		drawFB(shader, soulspear, frame,
+			glm::value_ptr(modelC),
 			glm::value_ptr(view),
 			glm::value_ptr(proj),
 			tarray, 3);
-		drawFB(post, quad, screen, glm::value_ptr(glm::mat4()),
-			glm::value_ptr(glm::mat4()), glm::value_ptr(glm::mat4()),
+
+		drawFB(post, quad, screen, glm::value_ptr(glm::mat4(time)),
+			glm::value_ptr(glm::mat4()),
+			glm::value_ptr(glm::mat4()),
 			frame.colors, frame.nColors);
 	}
 
