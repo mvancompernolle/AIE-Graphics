@@ -1,3 +1,4 @@
+/*
 #include "gldecs.h"
 #include "Vertex.h"
 #include "crenderutils.h"
@@ -66,12 +67,12 @@ Shader makeShader(const char * vsource, const char * fsource)
 	glShaderSource(vs, 1, &vsource, 0);
 	glShaderSource(fs, 1, &fsource, 0);
 	// compile the shaders
-	glCompileShader(vs);
-	glCompileShader(fs);
+	glog_glCompileShader(vs);
+	glog_glCompileShader(fs);
 	// link the shaders into a single program
 	glAttachShader(retval.handle, vs);
 	glAttachShader(retval.handle, fs);
-	glLinkProgram(retval.handle);
+	glog_glLinkProgram(retval.handle);
 	// no longer need these! Their functionality has been eaten by the program.
 	glDeleteShader(vs);
 	glDeleteShader(fs);
@@ -123,6 +124,8 @@ Texture makeTextureF(unsigned square, const float * pixels)
 
 Texture loadTexture(const char *path)
 {
+	glog("loading Texture", path);
+
 	int w, h, f;
 	unsigned char *p;
 
@@ -426,3 +429,4 @@ void drawFB(const Shader & s, const Geometry & g, const Framebuffer & fbo, const
 	}
 	glDrawElements(GL_TRIANGLES, g.size, GL_UNSIGNED_INT, 0);
 }
+*/

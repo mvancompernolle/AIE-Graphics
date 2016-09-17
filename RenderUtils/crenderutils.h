@@ -1,5 +1,13 @@
 #pragma once
-#include "globjects.h"
+#include "Vertex.h"
+#include "window.h"
+
+#include "globjs.h"
+#include "glmake.h"
+#include "glload.h"
+#include "gldraw.h"
+
+/*
 
 Geometry makeGeometry(const struct Vertex* verts, size_t vsize, const unsigned int *tris, size_t tsize);
 void freeGeometry(Geometry& geo);
@@ -32,3 +40,5 @@ void drawPhong(const Shader &s, const Geometry &g,
 void drawFB(const Shader &s, const Geometry &g, const Framebuffer& fbo,
 	const float M[16], const float V[16], const float P[16],
 	const Texture *T, unsigned t_count);
+
+*/
