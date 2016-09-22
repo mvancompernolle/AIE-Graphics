@@ -19,6 +19,8 @@ void main()
 	Shader gpass = loadShader("../res/shaders/gpass.vert",
 		"../res/shaders/gpass.frag");
 
+	Shader blur = loadShader("../res/shaders/blur.vert", "../res/shaders/blur.frag");
+
 	Shader lpass = loadShader("../res/shaders/lpass.vert",
 		"../res/shaders/lpass.frag");
 
@@ -27,7 +29,8 @@ void main()
 
 	Framebuffer screen = { 0, 1280, 720 };
 	Framebuffer gframe = makeFramebuffer(1280, 720, 4);
-	Framebuffer lframe = makeFramebuffer(1280, 720, 2);
+	Framebuffer lframe = makeFramebuffer(1280, 720, 3);
+	Framebuffer nframe = makeFramebuffer(1280, 720, 1);
 
 	glm::mat4 model, view, proj;
 
@@ -42,6 +45,7 @@ void main()
 		time += 0.016f;
 		clearFramebuffer(gframe);
 		clearFramebuffer(lframe);
+		clearFramebuffer(nframe);
 
 		model = glm::rotate(time, glm::vec3(0, 1, 0)) * glm::translate(glm::vec3(0, -1, 0));
 
@@ -49,9 +53,12 @@ void main()
 		tdraw(gpass, spear, gframe, model, view, proj,
 			spear_diffuse, spear_normal, spear_specular);
 
+		// Blur Pass
+		tdraw(blur, quad, nframe, gframe.colors[1]);
+
 		// Lighting pass
 		tdraw(lpass, quad, lframe, view, proj,
-			gframe.colors[0], gframe.colors[1],
+			gframe.colors[0], nframe.colors[0],
 			gframe.colors[2], gframe.colors[3],
 			gframe.depth);
 
@@ -78,6 +85,11 @@ void main()
 			glm::translate(glm::vec3(.25f, 0.25f, 0)) *
 			glm::scale(glm::vec3(0.25f, 0.25f, 1.f));
 		tdraw(post, quad, screen, lframe.colors[1], mod);
+
+		mod =
+			glm::translate(glm::vec3(.75f, 0.25f, 0)) *
+			glm::scale(glm::vec3(0.25f, 0.25f, 1.f));
+		tdraw(post, quad, screen, lframe.colors[2], mod);
 
 	}
 
