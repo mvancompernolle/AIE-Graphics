@@ -17,12 +17,12 @@ layout(location = 3) out vec4 position;
 
 void main(){
 	mat3 TBN = cotangent_frame(vNormal, vPosition, vUV);
-	vec3 N = TBN * (texture(normalMap, vUV).xyz * 2 - 1;
+	vec3 N = TBN * (texture(normalMap, vUV).xyz * 2 - 1);
 
 	albedo = texture(diffuseMap, vUV);
-	normal = vec4(n, 0);
+	normal = vec4(N, 0);
 	specular = texture(specularMap, vUV);
-	position = vPosition;
+	position = vec4(vPosition,1);
 }
 
 mat3 cotangent_frame( in vec3 N, in vec3 p, in vec2 uv )

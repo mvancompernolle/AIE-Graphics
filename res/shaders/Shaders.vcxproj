@@ -113,6 +113,8 @@
     <None Include="cameraFrag.glsl" />
     <None Include="gpass.frag" />
     <None Include="gpass.vert" />
+    <None Include="lpass.frag" />
+    <None Include="lpass.vert" />
     <None Include="postFrag.glsl" />
     <None Include="postVert.glsl" />
     <None Include="quad.frag" />
