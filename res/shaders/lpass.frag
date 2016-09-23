@@ -15,7 +15,8 @@ layout(location = 2) out vec4 outSpecular;
 
 in vec2 vUV;
 
-uniform vec4 lDir = normalize(vec4(1,0,-1,0));
+layout(location = 7) uniform vec4 lDir;
+layout(location = 8) uniform vec4 lCol;
 
 void main()
 {
@@ -34,7 +35,7 @@ void main()
 	if(spec > 0)
 			spec = pow(spec, sP);
 
-	outAlbedo = texture(albedoMap, vUV) * lamb;
-	outSpecular = texture(specularMap, vUV) * spec;
+	outAlbedo = texture(albedoMap, vUV) * lamb * lCol;
+	outSpecular = texture(specularMap, vUV) * spec * lCol;
 	outColor = outAlbedo + outSpecular;
 }
